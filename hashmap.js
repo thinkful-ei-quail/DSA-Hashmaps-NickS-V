@@ -5,7 +5,7 @@ module.exports = class HashMap {
         this._capacity = initialCapacity;
         this._deleted = 0;
     }
-    static _hashString(string) {
+    _hashString(string) {
         let hash = 5381;
         for (let i = 0; i < string.length; i++) {
             hash = (hash << 5) + hash + string.charCodeAt(i);
@@ -15,8 +15,10 @@ module.exports = class HashMap {
     }
     set(key, value) {
         const loadRatio = (this.length + this._deleted + 1) / this._capacity;
-        if (loadRatio > HashMap.MAX_LOAD_RATIO) {
-            this._resize(this._capacity * HashMap.SIZE_RATIO);
+        //console.log(loadRatio);
+        //console.log(this.MAX_LOAD_RATIO)
+        if (loadRatio > this.MAX_LOAD_RATIO) {
+            this._resize(this._capacity * this.SIZE_RATIO);
         }
         const index = this._findSlot(key);
         if (!this._hashTable[index]) {
@@ -29,7 +31,7 @@ module.exports = class HashMap {
         }
     }
     _findSlot(key) {
-        const hash = HashMap._hashString(key);
+        const hash = this._hashString(key);
         const start = hash % this._capacity;
         // console.log(this._hashTable)
 
@@ -45,9 +47,11 @@ module.exports = class HashMap {
         const oldSlots = this._hashTable;
         this._capacity = size;
         this.length = 0;
+        this._deleted = 0;
         this._hashTable = [];
         for (const slot of oldSlots) {
-            if (slot !== undefined) {
+            
+            if (slot !== undefined && !slot.DELETED) {
                 this.set(slot.key, slot.value);
             }
         }
